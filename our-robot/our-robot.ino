@@ -536,70 +536,12 @@ void loop() {
   int sonar_center = hcsr04.dist();
   int sonar_left = hcsr04_left.dist();
   int sonar_right = hcsr04_right.dist();
-
-  if (sonar_center < 20) { // O detected
-    if (sonar_left < sonar_right) {  // O on left
-      if (sonar_left < 15) {
-
-        while (sonar_left < 15) {
-          moveSidewaysRight();
-          sonar_left = hcsr04_left.dist();
-        }
-
-      }
-      else {
-
-        // if (sonar_left > 18) {
-        //   moveSidewaysLeft();
-        //   sonar_left = hcsr04_left.dist();
-        // }
-
-        if (sonar_left < 18) {
-            moveForDistance(50, "forward");
-          }
-        else {
-
-          if (!(s1 == s2 == s3 == s4 == s5 == 1))
-            while (!(s1 == s2 == s3 == s4 == s5 == 1)) {
-              followLine(s1, s2, s3, s4, s5);
-            }
-
-          else {
-            moveSidewaysLeft();
-            if (!(s1 == s2 == s3 == s4 == s5 == 1))
-            while (!(s1 == s2 == s3 == s4 == s5 == 1)) {
-              followLine(s1, s2, s3, s4, s5);
-            }
-
-          }
-          
-        }
-      }
-
-    } 
-    //else {
-    //   if (sonar_right < 15)
-    //     while (sonar_right < 15) {
-    //       moveSidewaysLeft();
-    //       sonar_right = hcsr04_right.dist();
-    //     }
-    //   else {
-    //     if (sonar_right < 15)
-    //       while (sonar_right < 15) {
-    //         moveForDistance(50, "forward");
-    //       }
-    //     else {
-    //       if (!(s1 = s2 = s3 = s4 = s5 = 1))
-    //         while (!(s1 = s2 = s3 = s4 = s5 = 1)) {
-    //           followLine(s1, s2, s3, s4, s5);
-    //         }
-    //       else {
-    //         moveSidewaysRight();
-    //       }
-    //     }
-    //   }
-    // }
-  } else {
-    followLine(s1, s2, s3, s4, s5);
+    if (sonar_center < 20){
+      if (sonar_left < sonar_center) {
+        Serial.println(sonar_center);
+        changeSpeed(255);
+        moveSidewaysRight();
+        sonar_left = hcsr04_left.dist();  // O on left
+    }
   }
 }
