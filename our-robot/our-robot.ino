@@ -25,7 +25,9 @@
 HCSR04 hcsr04(TRIG_PIN, ECHO_PIN);
 HCSR04 hcsr04_left(TRIG_PIN_LEFT, ECHO_PIN_LEFT);
 HCSR04 hcsr04_right(TRIG_PIN_RIGHT, ECHO_PIN_RIGHT);
-
+int sonar_center;
+int sonar_left;
+int sonar_right;
 //**********Front wheels***********//
 #define IN11 32  // 0
 #define IN12 33  //0
@@ -515,7 +517,6 @@ void setup() {
 }
 
 void loop() {
-
   // calculateRPM(1000); // print pulse count and speed every 1 second
 
   //Reading Sensor Values
@@ -532,16 +533,84 @@ void loop() {
   s3 = digitalRead(ir3);  //Middle Sensor
   s4 = digitalRead(ir4);  //Right Sensor
   s5 = digitalRead(ir5);  //Right Most Sensor
+  sonar_center = hcsr04.dist();
+  sonar_left = hcsr04_left.dist();
+  sonar_right = hcsr04_right.dist();
+  if (sonar_center < 20) { // O kdetected
+    if (sonar_left < sonar_right) {  // O on left
+      if (sonar_left < 15) {
+        {
+          Serial.print("Sonar left: ");
+          Serial.print(sonar_left);
+          Serial.print("\t Sonar right: ");
+          Serial.println(sonar_right);
+          changeSpeed(255);
+          moveSidewaysRight();
+          //sonar_left = hcsr04_left.dist();
+        }
 
-  int sonar_center = hcsr04.dist();
-  int sonar_left = hcsr04_left.dist();
-  int sonar_right = hcsr04_right.dist();
-    if (sonar_center < 20){
-      if (sonar_left < sonar_center) {
-        Serial.println(sonar_center);
-        changeSpeed(255);
-        moveSidewaysRight();
-        sonar_left = hcsr04_left.dist();  // O on left
+      }
+      else {
+        if (sonar_left > 18) {
+          Serial.println("Sonar left > 18");
+          moveSidewaysLeft();
+          //sonar_left = hcsr04_left.dist();
+        }
+        if (sonar_left < 18) {
+          Serial.println("Sonar left < 18");          
+            moveForDistance(50, "forward");
+          }
+        else {
+          if (!(s1 == s2 == s3 == s4 == s5 == 1)){
+            {
+              //followLine(s1, s2, s3, s4, s5);
+            }
+          }
+
+          else {
+            moveSidewaysLeft();
+            if (!(s1 == s2 == s3 == s4 == s5 == 1)){
+              {
+                //followLine(s1, s2, s3, s4, s5);
+              }
+            }
+          }
+          
+        }
+      }
+
+    } 
+    else {
+      if (sonar_right < 15)
+        {
+          Serial.println("Sonar right < 15");
+          moveSidewaysLeft();
+          //sonar_right = hcsr04_right.dist();
+        }
+      else {
+        if (sonar_right > 15)
+          {
+            Serial.println("Sonar right > 15");
+            moveForDistance(50, "forward");
+          }
+        else {
+          if (!(s1 = s2 = s3 = s4 = s5 = 1))
+            {
+              //followLine(s1, s2, s3, s4, s5);
+            }
+          else {
+            moveSidewaysRight();
+          }
+        }
+      }
     }
+  } else if (sonar_center >= 20) {
+    changeSpeed(255);
+    Serial.println("No obstacle");
+    moveForDistance(50, "forward");
+    // followLine(s1, s2, s3, s4, s5);
   }
+      sonar_center = hcsr04.dist();
+    sonar_left = hcsr04_left.dist();
+    sonar_right = hcsr04_right.dist();
 }
