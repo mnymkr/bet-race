@@ -19,7 +19,7 @@ int s4;  //Right Sensor
 int s5;  //Right Most Sensor
 
 //***********Distances for moving to avoid obstacle****************//
-int horizontal = 5;
+int horizontal = 80;
 int vertical = 10;
 
 //***********Sonar*************//
@@ -42,7 +42,7 @@ int sonar_center;
 int sonar_left;
 int sonar_right;
 #define NEAR 15
-#define FAR 30
+#define FAR 35
 int obstacle = 0;
 
 //**********Front wheels***********//
@@ -98,10 +98,10 @@ int ultra_center() {
   // Calculating the distance
   distance = duration * 0.034 / 2; // Speed of sound wave divided by 2 (go and back)
   // Displays the distance on the Serial Monitor
-  Serial.print("Distance: ");
-  Serial.print(distance);
-  Serial.println(" cm");
-  delay(5);
+  // Serial.print("Distance: ");
+  // Serial.print(distance);
+  // Serial.println(" cm");
+  // delay(5);
   return distance;
 }
 
@@ -120,10 +120,10 @@ int ultra_left() {
   // Calculating the distance
   distance = duration * 0.034 / 2; // Speed of sound wave divided by 2 (go and back)
   // Displays the distance on the Serial Monitor
-  Serial.print("Distance LEFT: ");
-  Serial.print(distance);
-  Serial.println(" cm");
-  delay(5);
+  // Serial.print("Distance LEFT: ");
+  // Serial.print(distance);
+  // Serial.println(" cm");
+  // delay(5);
   return distance;
 }
 
@@ -142,10 +142,10 @@ int ultra_right() {
   // Calculating the distance
   distance = duration * 0.034 / 2; // Speed of sound wave divided by 2 (go and back)
   // Displays the distance on the Serial Monitor
-  Serial.print("Distance RIGHT: ");
-  Serial.print(distance);
-  Serial.println(" cm");
-  delay(5);
+  // Serial.print("Distance RIGHT: ");
+  // Serial.print(distance);
+  // Serial.println(" cm");
+  // delay(5);
   return distance;
 }
 
@@ -381,8 +381,7 @@ void followLine(int s1, int s2, int s3, int s4, int s5) {
   // only 3 sensors in the middle
   if((s1 == 0) && (s2 == 1) && (s3 == 1) && (s4 == 1) && (s5 == 0))
   {
-    //going forward with full speed 
-    changeSpeed(255);
+    //going forward with full speed
     moveForward();
   }
 
@@ -468,14 +467,14 @@ void followLine(int s1, int s2, int s3, int s4, int s5) {
     //stop
   //    stopMoving();
   }
-  if((s1 == 1) && (s2 == 1) && (s3 == 1) && (s4 == 1) && (s5 == 1))
+  if ((s1 == 1) && (s2 == 1) && (s3 == 1) && (s4 == 1) && (s5 == 1))
   {
     changeSpeed(128); 
-  moveForDistance(200, "leftForward");
-  delay(100);
-  moveForDistance(35, "turnLeftFrontCenterICC");
-  delay(100);
-  moveForDistance(150, "forward");
+    moveForDistance(200, "leftForward");
+    delay(100);
+    moveForDistance(35, "turnLeftFrontCenterICC");
+    delay(100);
+    moveForDistance(150, "forward");
   }
 }
 
@@ -527,28 +526,28 @@ void moveForDistance(int distance, String direct) {
       }
     stopMoving();
   } else if (direct == "moveRightForward") {
-    while (((pulseCount0 + pulseCount1) / 2) < pulses) {  // if average pulse of 2 encoder is < 20
+    while (pulseCount1 < pulses) {  // if average pulse of 2 encoder is < 20
         moveRightForward();
         delay(5);
         Serial.println();
       }
     stopMoving();
   } else if (direct == "moveRightBackward") {
-    while (((pulseCount0 + pulseCount1) / 2) < pulses) {  // if average pulse of 2 encoder is < 20
+    while (pulseCount0 < pulses) {  // if average pulse of 2 encoder is < 20
         moveRightBackward();
         delay(5);
         Serial.println();
       }
     stopMoving();
   } else if (direct == "moveLeftForward") {
-    while (((pulseCount0 + pulseCount1) / 2) < pulses) {  // if average pulse of 2 encoder is < 20
+    while (pulseCount0 < pulses) {  // if average pulse of 2 encoder is < 20
         moveLeftForward();
         delay(5);
         Serial.println();
       }
     stopMoving();
   } else if (direct == "moveLeftBackward") {
-    while (((pulseCount0 + pulseCount1) / 2) < pulses) {  // if average pulse of 2 encoder is < 20
+    while (pulseCount1 < pulses) {  // if average pulse of 2 encoder is < 20
         moveLeftBackward();
         delay(5);
         Serial.println();
@@ -562,14 +561,14 @@ void moveForDistance(int distance, String direct) {
       }
     stopMoving();
   } else if (direct == "turnRight") {
-    while (((pulseCount0 + pulseCount1) / 2) < pulses) {  // if average pulse of 2 encoder is < 20
+    while (pulseCount1 < pulses) {  // if average pulse of 2 encoder is < 20
         turnRight();
         delay(5);
         Serial.println();
       }
     stopMoving();
   } else if (direct == "turnLeftFrontCenterICC") {
-    while (((pulseCount0 + pulseCount1) / 2) < pulses) {  // if average pulse of 2 encoder is < 20
+    while (pulseCount1 < pulses) {  // if average pulse of 2 encoder is < 20
         turnLeftFrontCenterICC();
         delay(5);
         Serial.println();
@@ -583,63 +582,42 @@ void moveForDistance(int distance, String direct) {
 
 void avoidRight() {
   if (sonar_left < NEAR) {  // too close to Obstacle
+    Serial.println("Too close");
     moveForDistance(horizontal, "moveRightForward");
-    Serial.println("Ne qua phai 10 cm");
-    // check for line
-    if (s1!=0 || s2!=0 || s3!=0 || s4!=0 || s5!=0)
-    {
-      Serial.println("Vo line avoidLeft");
-      obstacle=0;
-    }
 
   } else if (sonar_left > FAR) {  // too FAR from Obstacle
+    Serial.println("Too far");
     moveForDistance(horizontal, "moveLeftForward");
-    Serial.println("Ne qua trai 10 cm");
-    //Truong hop di ve dung line thi thoat che do obstacle, bat dau do line
-    if (s1!=0 || s2!=0 || s3!=0 || s4!=0 || s5!=0)
-    {
-      Serial.println("Vo line Avoid Right");
-      obstacle=0;
-    }
 
   } else {  // Obstacle within range
-    {
-      //Cu di thang
-      Serial.println("Đi thẳng");
-      moveForDistance(vertical, "moveForward");
-    }
+    moveForDistance(vertical, "moveForward");
+  }
+  //Truong hop di ve dung line thi thoat che do obstacle, bat dau do line
+  if (s1 || s2 || s3 || s4 || s5)
+  {
+    Serial.println("LINE FOUND!!!");
+    obstacle=0;
   }
 }
 
 //-----Ne ve ben trai truong hop right<left --------//
 void avoidLeft() {
   if (sonar_right < NEAR) {  // too close to Obstacle
+    Serial.println("Too close");
     moveForDistance(horizontal, "moveLeftForward");
-    // check for line
-    if (s1!=0 || s2!=0 || s3!=0 || s4!=0 || s5!=0)
-    {
-      Serial.println("Vo line avoidLeft");
-      obstacle=0;
-    }
-    Serial.println("Ne qua trai 10 cm");
 
   } else if (sonar_right > FAR) {  // too FAR from Obstacle
+    Serial.println("Too far");
     moveForDistance(horizontal, "moveRightForward");
-    Serial.println("Ne qua phai 10 cm");
-    //Truong hop di ve dung line thi thoat che do obstacle, bat dau do line
-    if (s1!=0 || s2!=0 || s3!=0 || s4!=0 || s5!=0)
-    {
-      Serial.println("Vo line avoidLeft");
-      obstacle=0;
-    }
-    // check for line
-
+  
   } else {  // Obstacle within range
-    {
-      //Cu di thang
-      Serial.println("Di thang");
-      moveForDistance(vertical, "moveForward");
-    }
+    moveForDistance(vertical, "moveForward");
+  }
+  //Truong hop di ve dung line thi thoat che do obstacle, bat dau do line
+  if (s1 || s2 || s3 || s4 || s5)
+  {
+    Serial.println("LINE FOUND!!!");
+    obstacle=0;
   }
 }
 //-------Do line -----------
@@ -721,13 +699,13 @@ void setup() {
   pinMode(ir4, INPUT);
   pinMode(ir5, INPUT);
 
-  changeSpeed(130);
+  changeSpeed(180);
 }
 void loop() {
   // calculateRPM(1000); // print pulse count and speed every 1 second
-  // delay(50);
+  delay(20);
 
-  // // Reading Sensor Values
+  // // // Reading Sensor Values
   sonar_center = ultra_center();
   sonar_left = ultra_left();
   sonar_right = ultra_right();
@@ -737,45 +715,55 @@ void loop() {
   // // Serial.println(sonar_right);
   // // Serial.println();
 
-  s1 = digitalRead(ir1);  //Left Most Sensor
-  s2 = digitalRead(ir2);  //Left Sensor
-  s3 = digitalRead(ir3);  //Middle Sensor
-  s4 = digitalRead(ir4);  //Right Sensor
-  s5 = digitalRead(ir5);  //Right Most Sensor
-  followLine(s1,s2,s3,s4,s5);
-
   // //------Detecting obstacle -------//
-  // if (sonar_center > 25) { // no obstacle
-  //   checkforline();
-  // }
-  // else {  // yes obstacle
-  //   obstacle = 1;
+  if (sonar_center > 40) { // no obstacle
+    s1 = digitalRead(ir1);  //Left Most Sensor
+    s2 = digitalRead(ir2);  //Left Sensor
+    s3 = digitalRead(ir3);  //Middle Sensor
+    s4 = digitalRead(ir4);  //Right Sensor
+    s5 = digitalRead(ir5);  //Right Most Sensor
+    followLine(s1,s2,s3,s4,s5);
+    Serial.println("BACK ON LINE BABYYYYY");
+  }
+  else {  // yes obstacle
+    obstacle = 1;
 
-  //   while (obstacle == 1) {  // while still in Avoiding Mode
+    if (sonar_left < sonar_right) {  // obstacle on left => move right
+      
+      while (obstacle == 1) {
+        Serial.println("Avoid to right");
+        delay(5);
 
-  //     delay(5);
-  //     sonar_center = ultra_center();
-  //     sonar_left = ultra_left();
-  //     sonar_right = ultra_right();
+        sonar_center = ultra_center();
+        sonar_left = ultra_left();
+        sonar_right = ultra_right();
 
-  //     s1 = digitalRead(ir1);  //Left Most Sensor
-  //     s2 = digitalRead(ir2);  //Left Sensor
-  //     s3 = digitalRead(ir3);  //Middle Sensor
-  //     s4 = digitalRead(ir4);  //Right Sensor
-  //     s5 = digitalRead(ir5);  //Right Most Sensor
-  //     // Serial.println(sonar_center);
-  //     // Serial.println(sonar_left);
-  //     // Serial.println(sonar_right);
-  //     // Serial.println();
+        s1 = digitalRead(ir1);  //Left Most Sensor
+        s2 = digitalRead(ir2);  //Left Sensor
+        s3 = digitalRead(ir3);  //Middle Sensor
+        s4 = digitalRead(ir4);  //Right Sensor
+        s5 = digitalRead(ir5);  //Right Most Sensor
 
-  //     if (sonar_left < sonar_right) {  // obstacle on left => move right
-  //       Serial.println("Moving right");
-  //       avoidRight();
+        avoidRight();        
+      }
 
-  //     } else {                    // obstacle on right => move left + check right
-  //       Serial.println("Moving left");
-  //       avoidLeft();
-  //     }
-  //   }
-  // }
+    } else {                    // obstacle on right => move left + check right
+      while (obstacle == 1) {
+        Serial.println("Avoid to left");
+        delay(5);
+
+        sonar_center = ultra_center();
+        sonar_left = ultra_left();
+        sonar_right = ultra_right();
+
+        s1 = digitalRead(ir1);  //Left Most Sensor
+        s2 = digitalRead(ir2);  //Left Sensor
+        s3 = digitalRead(ir3);  //Middle Sensor
+        s4 = digitalRead(ir4);  //Right Sensor
+        s5 = digitalRead(ir5);  //Right Most Sensor
+
+        avoidLeft();
+      }
+    }
+  }
 }
