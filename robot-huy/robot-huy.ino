@@ -728,9 +728,9 @@ void loop() {
   // delay(50);
 
   // // Reading Sensor Values
-  // sonar_center = ultra_center();
-  // sonar_left = ultra_left();
-  // sonar_right = ultra_right();
+  sonar_center = ultra_center();
+  sonar_left = ultra_left();
+  sonar_right = ultra_right();
   // //-----DEBUG-----//
   // // Serial.println(sonar_left);
   // // Serial.println(sonar_center);
