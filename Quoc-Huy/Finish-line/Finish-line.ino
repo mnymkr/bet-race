@@ -24,6 +24,7 @@ int left_mode;
 //***********Distances for moving to avoid obstacle****************//
 int horizontal = 20;
 int vertical = 60;
+#define SPEED 180
 
 //***********Sonar*************//
 #define TRIG_PIN 52  //attach pin D3 Arduino to pin Trig of HC-SR04 (TBD)
@@ -44,7 +45,7 @@ int vertical = 60;
 int sonar_center;
 int sonar_left;
 int sonar_right;
-#define NEAR 20
+#define NEAR 25
 #define FAR 60
 int obstacle = 0;
 
@@ -361,7 +362,7 @@ void stopMoving() {
 void changeSpeed(int wheelSpeed) {
   analogWrite(ENA1, wheelSpeed - 10);  // compensate for misdirection
   analogWrite(ENB1, wheelSpeed);
-  analogWrite(ENA2, wheelSpeed);
+  analogWrite(ENA2, wheelSpeed - 10);  // compensate for misdirection
   analogWrite(ENB2, wheelSpeed);
 }
 void calculateRPM(int time) {
@@ -443,7 +444,7 @@ void followLine(int s1, int s2, int s3, int s4, int s5) {
     //delay(100);
     moveForDistance(30, "turnLeftFrontCenterICC");
     //delay(100);
-    moveForDistance(100, "moveForward");
+    moveForDistance(130, "moveForward");
     delay(50000);
   }
   //lINE PHẢI
@@ -567,28 +568,36 @@ void moveForDistance(int distance, String direct) {
   //   stopMoving();
   // }
 }
+
 // AVOID*****
 void avoidRight() {
   sonar_left = ultra_left();
+  sonar_center = ultra_center();
   if (sonar_left < NEAR) {  // too close to Obstacle
     Serial.println("Sideway Right 1");
     // moveForDistance(horizontal, "moveSidewaysRight");
     moveSidewaysRight();
-    delay(100);
-    } 
-    else if (sonar_left > FAR) {  // too FAR from Obstacle
+    delay(300);
+  } 
+  else if (sonar_left > FAR) {  // too FAR from Obstacle
     Serial.println("Sideway Left 1");
     // moveForDistance(horizontal, "moveSidewaysLeft");
     moveSidewaysLeft();
-    delay(100);
+    delay(300);
   } 
-    else { // Obstacle within range
-      // moveForDistance(vertical, "moveForward");
-      Serial.println("Forward 1");
-      moveForward();
-      delay(100);
-        //Truong hop di ve dung line thi thoat che do obstacle, bat dau do line
-    }
+  else if (sonar_center > NEAR) { // FIX THIS
+    Serial.println("Clear to move forward");
+    // moveForDistance(vertical, "moveForward");
+    moveForward();
+    delay(300);
+  }
+  else { // Obstacle within range
+    // moveForDistance(vertical, "moveForward");
+    Serial.println("Forward 1");
+    moveForward();
+    delay(300);
+      //Truong hop di ve dung line thi thoat che do obstacle, bat dau do line
+  }
   s1 = digitalRead(ir1);  //Left Most Sensor
   s2 = digitalRead(ir2);  //Left Sensor
   s3 = digitalRead(ir3);  //Middle Sensor
@@ -599,28 +608,36 @@ void avoidRight() {
     obstacle = 0;
     right_mode = 0;
   }
-  }
+}
 
 void avoidLeft() {
   sonar_right = ultra_right();
+  sonar_center = ultra_center();
   if (sonar_right < NEAR) {  // too close to Obstacle
     Serial.println("Sideway Left 2");
     // moveForDistance(horizontal, "moveSidewaysLeft");
     moveSidewaysLeft();
-    delay(100);
+    delay(300);
   } 
   else if (sonar_right > FAR) {  // too FAR from Obstacle
     Serial.println("Sideway Right 2");
     // moveForDistance(horizontal, "moveSidewaysRight");
     moveSidewaysRight();
-    delay(100);
+    delay(300);
   } 
+  else if (sonar_center > NEAR) { // FIX THIS
+    Serial.println("Clear to move forward");
+    // moveForDistance(vertical, "moveForward");
+    moveForward();
+    delay(300);
+  }
   else {  // Obstacle within range
-      // moveForDistance(vertical, "moveForward");
+    // moveForDistance(vertical, "moveForward");
     Serial.println("Forward 2");
     moveForward();
-    delay(100);
+    delay(300);
   }
+
   //Truong hop di ve dung line thi thoat che do obstacle, bat dau do line
   s1 = digitalRead(ir1);  //Left Most Sensor
   s2 = digitalRead(ir2);  //Left Sensor
@@ -676,7 +693,7 @@ void setup() {
   pinMode(ir4, INPUT);
   pinMode(ir5, INPUT);
 
-  changeSpeed(150);
+  changeSpeed(SPEED);
 }
 void loop() {
   // calculateRPM(1000); // print pulse count and speed every 1 second
@@ -684,8 +701,6 @@ void loop() {
 
   // Reading Sensor Values
   sonar_center = ultra_center();
-  sonar_left = ultra_left();
-  sonar_right = ultra_right();
   // //-----DEBUG-----//
   // // Serial.println(sonar_left);
   // // Serial.println(sonar_center);
@@ -721,32 +736,130 @@ void loop() {
   //   }
   // } 
 
-  if (sonar_center > 30) {
-    line_mode = 1;
-    while (line_mode == 1){
+  // if (sonar_center > 30) { // no obstacle
+  //   line_mode = 1;
+  //   while (line_mode == 1){
+  //   s1 = digitalRead(ir1);  //Left Most Sensor
+  //   s2 = digitalRead(ir2);  //Left Sensor
+  //   s3 = digitalRead(ir3);  //Middle Sensor
+  //   s4 = digitalRead(ir4);  //Right Sensor
+  //   s5 = digitalRead(ir5);  //Right Most Sensor
+  //   followLine(s1, s2, s3, s4, s5);
+  //   }
+  // }
+  // else { // yes obstacle
+  //   moveForDistance(10, "MoveBackward");
+  //   if (sonar_left < sonar_right){
+  //     right_mode = 1;
+  //     while(right_mode == 1){
+  //       avoidRight();
+  //     }
+  //     delay(100);  
+  //   }
+  //   else {
+  //     left_mode = 1;
+  //     while(left_mode == 1){
+  //       avoidLeft();
+  //     }
+  //     delay(100);
+  //   }
+  // }
+  if (sonar_center < 30) {
+    sonar_left = ultra_left();
+    sonar_right = ultra_right();
+
+    if (sonar_left > sonar_right) { // GO LEFT
+      while (sonar_center < 30) { // SLIDE LEFT
+        moveSidewaysLeft();
+        sonar_center = ultra_center();
+      }
+      delay(500); // DEGBUG
+      stopMoving();
+      // moveForDistance(30, "moveSidewaysLeft");
+
+      // MOVE UP UNTIL SEE OBTACLE
+      sonar_right = ultra_right();
+      while (sonar_right > NEAR) {
+        moveForward();
+        sonar_right = ultra_right();        
+      }
+      changeSpeed(SPEED - 40);
+
+      // MOVE UNTIL PASS OBSTACLE
+      while (sonar_right < NEAR) {
+        moveForward();
+        sonar_right = ultra_right();
+      }
+      moveForDistance(30, "moveForward");
+      delay(400); // DEBUG
+
+      // BACK TO LINE
+      changeSpeed(SPEED);
+      moveForDistance(20, "moveForward");
+      s1 = digitalRead(ir1);  //Left Most Sensor
+      s2 = digitalRead(ir2);  //Left Sensor
+      s3 = digitalRead(ir3);  //Middle Sensor
+      s4 = digitalRead(ir4);  //Right Sensor
+      s5 = digitalRead(ir5);  //Right Most Sensor
+      while (!(s1 || s2 || s3 || s4 || s5)) {
+        moveSidewaysRight();
+        s1 = digitalRead(ir1);  //Left Most Sensor
+        s2 = digitalRead(ir2);  //Left Sensor
+        s3 = digitalRead(ir3);  //Middle Sensor
+        s4 = digitalRead(ir4);  //Right Sensor
+        s5 = digitalRead(ir5);  //Right Most Sensor
+      }
+      // stopMoving();
+
+    } else { // GO RIGHT
+      while (sonar_center < 30) {
+        moveSidewaysRight();
+        sonar_center = ultra_center();
+      }
+      delay(500); // DEGBUG
+      stopMoving();
+      // moveForDistance(30, "moveSidewaysRight");
+
+      // MOVE UP UNTIL SEE OBTACLE
+      sonar_left = ultra_left();
+      while (sonar_left > NEAR) {
+        moveForward();
+        sonar_left = ultra_left();
+      }
+      changeSpeed(SPEED - 40);
+
+      // MOVE UNTIL PASS OBSTACLE
+      while (sonar_left < NEAR) { 
+        moveForward();
+        sonar_left = ultra_left();
+      }
+      moveForDistance(30, "moveForward");
+      delay(400); // DEBUG
+
+      // BACK TO LINE
+      changeSpeed(SPEED);
+      moveForDistance(20, "moveForward");
+      s1 = digitalRead(ir1);  //Left Most Sensor
+      s2 = digitalRead(ir2);  //Left Sensor
+      s3 = digitalRead(ir3);  //Middle Sensor
+      s4 = digitalRead(ir4);  //Right Sensor
+      s5 = digitalRead(ir5);  //Right Most Sensor
+      while (!(s1 || s2 || s3 || s4 || s5)) {
+        moveSidewaysLeft();
+        s1 = digitalRead(ir1);  //Left Most Sensor
+        s2 = digitalRead(ir2);  //Left Sensor
+        s3 = digitalRead(ir3);  //Middle Sensor
+        s4 = digitalRead(ir4);  //Right Sensor
+        s5 = digitalRead(ir5);  //Right Most Sensor
+      }
+      // stopMoving();
+    }
+  } else {
     s1 = digitalRead(ir1);  //Left Most Sensor
     s2 = digitalRead(ir2);  //Left Sensor
     s3 = digitalRead(ir3);  //Middle Sensor
     s4 = digitalRead(ir4);  //Right Sensor
     s5 = digitalRead(ir5);  //Right Most Sensor
     followLine(s1, s2, s3, s4, s5);
-    }
-  }
-  else {
-    moveForDistance(10, "MoveBackward");
-    if (sonar_left < sonar_right){
-      right_mode = 1;
-      while(right_mode == 1){
-        avoidRight();
-      }
-      delay(100);  
-    }
-    else {
-      left_mode = 1;
-      while(left_mode == 1){
-        avoidLeft();
-    }
-    }
-    delay(100);
   }
 }
